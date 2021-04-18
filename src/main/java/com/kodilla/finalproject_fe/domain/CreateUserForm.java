@@ -12,7 +12,7 @@ import java.util.List;
 
 public class CreateUserForm extends FormLayout {
     private MainView mainView;
-    private List<UserDTO> userDTOList;
+    private List<User> userList;
     private Service service;
     TextField userID = new TextField("userID");
     TextField userName = new TextField("Nazwa");
@@ -23,9 +23,9 @@ public class CreateUserForm extends FormLayout {
     Button chooseButton = new Button("Wybierz użytkownika");
     Button deleteButton = new Button("Usuń użytkownika");
 
-    public CreateUserForm(List<UserDTO> userDTOList, MainView mainView) {
+    public CreateUserForm(List<User> userList, MainView mainView) {
         this.mainView = mainView;
-        this.userDTOList = userDTOList;
+        this.userList = userList;
         service = Service.getInstance();
         add(userID, userName, createButtonsLayoutOne(), createButtonsLayoutTwo());
     }
@@ -53,29 +53,30 @@ public class CreateUserForm extends FormLayout {
     }
     private void createAction(){
         if(userName.getValue().length()>0) {
-            service.createUser(new UserDTO(userName.getValue()));
+            service.createUser(new User(userName.getValue()));
             mainView.refresh();
         }
     }
     private void resignationAction(){
         setVisible(false);
         mainView.setGridUserVisible(false);
+        mainView.setTextEditUserButton();
         mainView.refresh();
     }
     private void changeAction(){
         if(Long.parseLong(userID.getValue()) >0 && userName.getValue().length()>0) {
-            service.changeUserName(new UserDTO(Long.parseLong(userID.getValue()), userName.getValue()));
+            service.changeUserName(new User(Long.parseLong(userID.getValue()), userName.getValue()));
             mainView.refresh();
         }
     }
     private void chooseAction(){
-        mainView.setChoosenUser(new UserDTO(Long.parseLong(userID.getValue()), userName.getValue()));
+        mainView.setChoosenUser(new User(Long.parseLong(userID.getValue()), userName.getValue()));
         setVisible(false);
         mainView.setGridUserVisible(false);
+        mainView.setTextEditUserButton();
         mainView.refresh();
     }
     private void deleteAction(){
-        /**kasowanie użytkownika w serwisie */
         service.deleteUser(Long.parseLong(userID.getValue()));
         mainView.refresh();
     }

@@ -5,21 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserDTO {
+public class User {
     @JsonProperty("userID")
     private Long userID;
     @JsonProperty("name")
     private String userName;
 
-    public UserDTO(){
+    public User(){
         this.userName = "";
     }
 
-    public UserDTO(String userName){
+    public User(String userName){
         this.userName = userName;
     }
 
-    public UserDTO(Long userID, String userName) {
+    public User(Long userID, String userName) {
         this.userID = userID;
         this.userName = userName;
     }
@@ -37,10 +37,10 @@ public class UserDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserDTO userDTO = (UserDTO) o;
+        User user = (User) o;
 
-        if (userID != null ? !userID.equals(userDTO.userID) : userDTO.userID != null) return false;
-        return userName != null ? userName.equals(userDTO.userName) : userDTO.userName == null;
+        if (userID != null ? !userID.equals(user.userID) : user.userID != null) return false;
+        return userName != null ? userName.equals(user.userName) : user.userName == null;
     }
 
     @Override

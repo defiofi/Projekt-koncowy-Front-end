@@ -1,8 +1,6 @@
 package com.kodilla.finalproject_fe;
 
-import com.kodilla.finalproject_fe.domain.CreateUserForm;
-import com.kodilla.finalproject_fe.domain.RateOfExchangeDTO;
-import com.kodilla.finalproject_fe.domain.UserDTO;
+import com.kodilla.finalproject_fe.domain.*;
 import com.kodilla.finalproject_fe.service.Service;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -17,78 +15,144 @@ import org.springframework.stereotype.Component;
 @Component
 @Route
 public class MainView extends VerticalLayout {
-    private UserDTO choosenUser = new UserDTO();
+    private User choosenUser = new User();
     private CreateUserForm createUserForm;
+    private CurrencyForm currencyForm;
     private Service service;
-    private Grid<RateOfExchangeDTO> gridRate = new Grid<>(RateOfExchangeDTO.class);
-    private Grid<UserDTO> gridUser = new Grid<>(UserDTO.class);
+    private Grid<RateOfExchange> gridRate = new Grid<>(RateOfExchange.class);
+    //private Grid<User> gridUser = new Grid<>(User.class);
+    private Grid<Currency> gridCurrency = new Grid<>(Currency.class);
+    private Grid<User> grid = new Grid<>(User.class);
     private TextField choiceUser = new TextField();
     private TextField descriptionUser = new TextField();
-    private Button createUserButton = new Button("Edycja użytkowników");
+    private Button editUserButton = new Button("Edycja użytkowników");
+    private Button showRatesButton = new Button("Pokaż kursy walut");
+    private Button showCurrencyButton = new Button("Pokaż konta walutowe użytkownika");
 
     public MainView() {
 
         service = Service.getInstance();
         createUserForm = new CreateUserForm(service.getUsers(),this);
         createUserForm.setVisible(false);
-        descriptionUser.setPlaceholder("Wybrany użytkownik:");
-        VerticalLayout userContent = new VerticalLayout(gridUser, createUserForm);
-        HorizontalLayout userBar = createUserBar();
-        configureGridUser();
-        add(new H1("Kantor internetowy"), userBar , userContent);
+        currencyForm = new CurrencyForm( this, service.getRates());
+        currencyForm.setVisible(false);
+        descriptionUser.setValue("Wybrany użytkownik:");
+        descriptionUser.setReadOnly(true);
+        choiceUser.setReadOnly(true);
+
+        configureGrids();
+        VerticalLayout userContent = new VerticalLayout(grid, createUserForm);
+        VerticalLayout currencyContent = new VerticalLayout(gridCurrency, currencyForm);
+        HorizontalLayout userBar = firstBar();
+
+        add(new H1("Kantor internetowy"), userBar , userContent , gridRate , currencyContent);
         refresh();
 
     }
     public void refresh() {
-        //gridRate.setItems(rateOfExchangeService.getRates());
-       gridUser.setItems(service.getUsers());
-       choiceUser.setPlaceholder(choosenUser.getUserName());
+        gridRate.setItems(service.getRates());
+        grid.setItems(service.getUsers());
+        choiceUser.setValue(choosenUser.getUserName());
+        if(choiceUser.getValue() == null || choiceUser.getValue().equals("")){
+            showCurrencyButton.setVisible(false);
+        }else{
+            showCurrencyButton.setVisible(true);
+            gridCurrency.setItems(service.getCurrency(choosenUser.getUserID()));
+            currencyForm.setCurrencyList(service.getCurrency(choosenUser.getUserID()));
+        }
     }
-    private void configureGridUser() {
-        gridUser.setColumns("userID", "userName");
-        gridUser.setVisible(false);
-        gridUser.asSingleSelect().addValueChangeListener(event -> editContact(event.getValue()));
-    }
-    private void configureGridRate() {
+    private void configureGrids() {
+        grid.setColumns("userID", "userName");
+        grid.setItems(service.getUsers());
+        grid.setVisible(false);
+        grid.asSingleSelect().addValueChangeListener(event -> editContact(event.getValue()));
+
         gridRate.setColumns("currencyName", "currencyCode", "bid", "ask");
+        gridRate.setVisible(false);
+
+        gridCurrency.setColumns("currencyName", "currencyCode", "account");
+        gridCurrency.setVisible(false);
+        gridCurrency.asSingleSelect().addValueChangeListener(event -> editCurrency(event.getValue()));
     }
-    /*private List<String> findListOfUsers(){
-        List<UserDTO> dtoList = rateOfExchangeService.getUsers();
-        List<String> list = dtoList.stream()
-                .map(UserDTO::getUserName)
-                .collect(Collectors.toList());
-        return list;
-    }*/
-    public void setChoosenUser(UserDTO choosenUser){
+    public void setChoosenUser(User choosenUser){
         this.choosenUser = choosenUser;
     }
-    private HorizontalLayout createUserBar() {
-        createUserButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        createUserButton.addClickListener(click -> createAction());
-
-        return new HorizontalLayout(descriptionUser , choiceUser, createUserButton);
+    public User getChoosenUser(){return this.choosenUser;}
+    private HorizontalLayout firstBar() {
+        editUserButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        editUserButton.addClickListener(click -> userAction());
+        showRatesButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        showRatesButton.addClickListener(click -> showRatesAction());
+        showCurrencyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        showCurrencyButton.addClickListener(Click -> currencyAction());
+        showCurrencyButton.setVisible(false);
+        return new HorizontalLayout(descriptionUser , choiceUser, editUserButton, showRatesButton, showCurrencyButton);
     }
-
-    private void createAction(){
-        gridUser.setVisible(true);
-        createUserForm.setVisible(true);
+    private void userAction(){
+        if(editUserButton.getText().equals("Edycja użytkowników")){
+            editUserButton.setText("Rezygnacja z edycji użytkowników");
+            grid.setVisible(true);
+            createUserForm.setVisible(true);
+        }else{
+            editUserButton.setText("Edycja użytkowników");
+            grid.setVisible(false);
+            createUserForm.setVisible(false);
+        }
         refresh();
     }
-    public void editContact(UserDTO userDTO) {
+    private void showRatesAction(){
+        if(showRatesButton.getText().equals("Pokaż kursy walut")){
+            gridRate.setVisible(true);
+            showRatesButton.setText("Ukryj kursy walut");
+        }else{
+            gridRate.setVisible(false);
+            showRatesButton.setText("Pokaż kursy walut");
+        }
+        refresh();
+    }
+    private void currencyAction(){
+        if(showCurrencyButton.getText().equals("Pokaż konta walutowe użytkownika")){
+            showCurrencyButton.setText("Ukryj konta walutowe użytkownika");
+            gridCurrency.setVisible(true);
+            currencyForm.setVisible(true);
+        }else{
+            showCurrencyButton.setText("Pokaż konta walutowe użytkownika");
+            gridCurrency.setVisible(false);
+            currencyForm.setVisible(false);
+        }
+        refresh();
+    }
+    public void editContact(User user) {
 
-        if (userDTO == null) {
+        if (user == null) {
             createUserForm.setUserID(null);
             createUserForm.setUserName("");
-            createUserForm.setVisible(false);
             removeClassName("editing");
         } else {
-            createUserForm.setUserID(userDTO.getUserID());
-            createUserForm.setUserName(userDTO.getUserName());
+            createUserForm.setUserID(user.getUserID());
+            createUserForm.setUserName(user.getUserName());
             createUserForm.setVisible(true);
             addClassName("editing");
         }
     }
+    public void editCurrency(Currency currency){
+        if(currency == null){
+            currencyForm.setCurrency(new Currency());
+        }else{
+            currencyForm.setCurrency(currency);
+            currencyForm.setVisible(true);
+        }
+    }
     public void setGridUserVisible(boolean visible){
-        gridUser.setVisible(visible);
+        grid.setVisible(visible);
+    }
+    public void setGridCurrencyVisible(boolean visible) {
+        gridCurrency.setVisible(visible);
+    }
+    public void setTextEditUserButton(){
+        editUserButton.setText("Edycja użytkowników");
+    }
+    public void setTextShowCurrencyButton(){
+        showCurrencyButton.setText("Pokaż konta walutowe użytkownika");
     }
 }

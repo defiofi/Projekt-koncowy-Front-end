@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RateOfExchangeDTO {
+public class RateOfExchange {
     @JsonProperty("currency")
     private String currencyName;
     @JsonProperty("code")
@@ -14,14 +14,14 @@ public class RateOfExchangeDTO {
     @JsonProperty("ask")
     private Double ask;
 
-    public RateOfExchangeDTO(String currencyName, String currencyCode, Double bid, Double ask ) {
+    public RateOfExchange(String currencyName, String currencyCode, Double bid, Double ask ) {
         this.currencyName = currencyName;
         this.currencyCode = currencyCode;
         this.bid = bid;
         this.ask = ask;
 
     }
-    public RateOfExchangeDTO(){
+    public RateOfExchange(){
         this.currencyCode = "";
         this.bid = 0.0;
         this.ask = 0.0;

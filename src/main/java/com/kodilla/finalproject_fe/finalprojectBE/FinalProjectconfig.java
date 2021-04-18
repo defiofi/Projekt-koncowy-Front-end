@@ -5,10 +5,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FinalProjectconfig {
-    @Value("${finalProject.api.endpoint}")
+    //@Value("${finalProject.api.endpoint}")
     private String finalProjectApiEndpoint;
 
-    public String getFinalProjectApiEndpoint() {
+    public String getApiEndpoint() {
         return finalProjectApiEndpoint;
+    }
+    public FinalProjectconfig(){
+        finalProjectApiEndpoint = "http://localhost:8080";
     }
 }
