@@ -2,12 +2,15 @@ package com.kodilla.finalproject_fe;
 
 import com.kodilla.finalproject_fe.domain.*;
 import com.kodilla.finalproject_fe.service.Service;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import org.springframework.stereotype.Component;
@@ -20,14 +23,15 @@ public class MainView extends VerticalLayout {
     private CurrencyForm currencyForm;
     private Service service;
     private Grid<RateOfExchange> gridRate = new Grid<>(RateOfExchange.class);
-    //private Grid<User> gridUser = new Grid<>(User.class);
     private Grid<Currency> gridCurrency = new Grid<>(Currency.class);
     private Grid<User> grid = new Grid<>(User.class);
     private TextField choiceUser = new TextField();
     private TextField descriptionUser = new TextField();
+    private TextArea info = new TextArea();
     private Button editUserButton = new Button("Edycja użytkowników");
     private Button showRatesButton = new Button("Pokaż kursy walut");
     private Button showCurrencyButton = new Button("Pokaż konta walutowe użytkownika");
+    private Button infoButton = new Button("Informacje o programie");
 
     public MainView() {
 
@@ -39,13 +43,13 @@ public class MainView extends VerticalLayout {
         descriptionUser.setValue("Wybrany użytkownik:");
         descriptionUser.setReadOnly(true);
         choiceUser.setReadOnly(true);
-
+        info();
         configureGrids();
         VerticalLayout userContent = new VerticalLayout(grid, createUserForm);
         VerticalLayout currencyContent = new VerticalLayout(gridCurrency, currencyForm);
         HorizontalLayout userBar = firstBar();
 
-        add(new H1("Kantor internetowy"), userBar , userContent , gridRate , currencyContent);
+        add(new H1("Kantor internetowy"), userBar, info, userContent, gridRate, currencyContent);
         refresh();
 
     }
@@ -65,6 +69,7 @@ public class MainView extends VerticalLayout {
         grid.setColumns("userID", "userName");
         grid.setItems(service.getUsers());
         grid.setVisible(false);
+        grid.setHeight(300, Unit.PIXELS);
         grid.asSingleSelect().addValueChangeListener(event -> editContact(event.getValue()));
 
         gridRate.setColumns("currencyName", "currencyCode", "bid", "ask");
@@ -72,6 +77,7 @@ public class MainView extends VerticalLayout {
 
         gridCurrency.setColumns("currencyName", "currencyCode", "account");
         gridCurrency.setVisible(false);
+        gridCurrency.setHeight(300, Unit.PIXELS);
         gridCurrency.asSingleSelect().addValueChangeListener(event -> editCurrency(event.getValue()));
     }
     public void setChoosenUser(User choosenUser){
@@ -81,12 +87,19 @@ public class MainView extends VerticalLayout {
     private HorizontalLayout firstBar() {
         editUserButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editUserButton.addClickListener(click -> userAction());
+
         showRatesButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         showRatesButton.addClickListener(click -> showRatesAction());
+
         showCurrencyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        showCurrencyButton.addClickListener(Click -> currencyAction());
+        showCurrencyButton.addClickListener(click -> currencyAction());
         showCurrencyButton.setVisible(false);
-        return new HorizontalLayout(descriptionUser , choiceUser, editUserButton, showRatesButton, showCurrencyButton);
+
+        infoButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        infoButton.addClickShortcut(Key.F1);
+        infoButton.addClickListener(click -> infoAction());
+
+        return new HorizontalLayout(descriptionUser , choiceUser, editUserButton, showRatesButton, showCurrencyButton, infoButton);
     }
     private void userAction(){
         if(editUserButton.getText().equals("Edycja użytkowników")){
@@ -122,6 +135,15 @@ public class MainView extends VerticalLayout {
         }
         refresh();
     }
+    private void infoAction(){
+        if(infoButton.getText().equals("Informacje o programie")) {
+            info.setVisible(true);
+            infoButton.setText("Ukryj informacje");
+        } else{
+            info.setVisible(false);
+            infoButton.setText("Informacje o programie");
+        }
+    }
     public void editContact(User user) {
 
         if (user == null) {
@@ -154,5 +176,17 @@ public class MainView extends VerticalLayout {
     }
     public void setTextShowCurrencyButton(){
         showCurrencyButton.setText("Pokaż konta walutowe użytkownika");
+    }
+    private void info(){
+        String text ="Aplikacja \"Kantor internetowy\" służy do wirtualnej wymiany walut. Wymiana następuje miedzy walutą obcą a polską i odwrotnie. \n" +
+                "Aby skorzystać z tych możliwości programu należy w pierwszej kolejności wybrać użytkownika. Jeżeli jeszcze nie ma użytkowników należy utworzyć nowego użytkownika. A nastepnie go wybrać. \n" +
+                "Można to wykonać po kliknieciu przycisku: \"Edycja użytkowników\". Informacje o aktualnych kursach walut można prześledzić klikając na przycisk: \"Pokaż kursy walut\". \n" +
+                "Przycisk: \"Pokaż konta walutowe użytkownika\" jest odsłoniety po wybraniu użytkownika. Umożliwia on operacje na kontach użytkownika. Aby była możliwa wymiana walut użytkownik musi \n" +
+                "posiadać co najmniej dwa konta walutowe, w tym jedno z nich musi być z polską walutą (PLN).   ";
+        info.setValue(text);
+        info.setHelperText("Informacje o programie");
+        info.setSizeFull();
+        info.setReadOnly(true);
+        info.setVisible(false);
     }
 }

@@ -1,7 +1,6 @@
 package com.kodilla.finalproject_fe.service;
 
 import com.kodilla.finalproject_fe.domain.Currency;
-import com.kodilla.finalproject_fe.domain.CurrencyForm;
 import com.kodilla.finalproject_fe.domain.RateOfExchange;
 import com.kodilla.finalproject_fe.domain.User;
 import com.kodilla.finalproject_fe.finalprojectBE.FinalProjectconfig;
@@ -53,25 +52,39 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        User[] userResponse = restTemplate.getForObject(uriUsers , User[].class);
-        return Optional.ofNullable(userResponse)
-                .map(Arrays::asList)
-                .orElse(Collections.emptyList());
+        try {
+            User[] userResponse = restTemplate.getForObject(uriUsers, User[].class);
+            return Optional.ofNullable(userResponse)
+                    .map(Arrays::asList)
+                    .orElse(Collections.emptyList());
+        }catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody getUsers()");
+            return new ArrayList<User>();
+        }
     }
     public void deleteUser(Long userID){
         URI uriDeleteUsers = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/user/"+userID)
                 .build()
                 .encode()
                 .toUri();
-        restTemplate.delete(uriDeleteUsers);
+        try {
+            restTemplate.delete(uriDeleteUsers);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody deleteUsers()");
+        }
     }
     public User createUser(User user) {
         URI uriCreateUsers = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/user/")
                 .build()
                 .encode()
                 .toUri();
-        User userResponse = restTemplate.postForObject(uriCreateUsers, user, User.class);
-    return userResponse;
+        try {
+            User userResponse = restTemplate.postForObject(uriCreateUsers, user, User.class);
+            return userResponse;
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody createUsers()");
+            return new User();
+        }
     }
     public void  changeUserName(User user){
         URI uriChangeUsers = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/user/")
@@ -80,17 +93,26 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-         restTemplate.put(uriChangeUsers, user);
+        try {
+            restTemplate.put(uriChangeUsers, user);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody changeUserName()");
+        }
     }
     public List<Currency> getCurrency(Long userID){
         URI uriShowCurrency = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/currency/"+ userID)
                 .build()
                 .encode()
                 .toUri();
-        Currency[] currencyListResponse = restTemplate.getForObject(uriShowCurrency, Currency[].class);
-        return Optional.ofNullable(currencyListResponse)
-                .map(Arrays::asList)
-                .orElse(Collections.emptyList());
+        try {
+            Currency[] currencyListResponse = restTemplate.getForObject(uriShowCurrency, Currency[].class);
+            return Optional.ofNullable(currencyListResponse)
+                    .map(Arrays::asList)
+                    .orElse(Collections.emptyList());
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody getCurrency()");
+            return new ArrayList<Currency>();
+        }
     }
     public Currency newCurrency(Long userID , String currencyCode){
         URI uriNewCurrency = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/currency/")
@@ -99,8 +121,13 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        Currency currencyResponse = restTemplate.postForObject(uriNewCurrency,null, Currency.class);
-        return currencyResponse;
+        try {
+            Currency currencyResponse = restTemplate.postForObject(uriNewCurrency, null, Currency.class);
+            return currencyResponse;
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody newCurrency()");
+            return new Currency();
+        }
     }
     public void deleteCurrency(Long userID , String currencyCode){
         URI uriDeleteCurrency = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/currency/")
@@ -109,7 +136,11 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        restTemplate.delete(uriDeleteCurrency);
+        try {
+            restTemplate.delete(uriDeleteCurrency);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody deleteCurrency()");
+        }
     }
     public void topUpAccount(Long userID , String currencyCode , Double value){
         URI uriTopUpCurrency = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/currency/topUp")
@@ -119,7 +150,11 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-         restTemplate.put(uriTopUpCurrency, null);
+        try {
+            restTemplate.put(uriTopUpCurrency, null);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody topUpAccount()");
+        }
     }
     public void payOutAccount(Long userID , String currencyCode , Double value){
         URI uriPayOutCurrency = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/currency/payOut")
@@ -129,7 +164,11 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        restTemplate.put(uriPayOutCurrency, null);
+        try {
+            restTemplate.put(uriPayOutCurrency, null);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody payOutAccount()");
+        }
     }
     public void buyCurrency(Long userID, String currency_Code, Double value){
         URI uriBuy = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/exchange/buy")
@@ -139,7 +178,11 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        restTemplate.put(uriBuy, null);
+        try {
+            restTemplate.put(uriBuy, null);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody buyCurrency()");
+        }
     }
     public void sellCurrency(Long userID, String currency_Code, Double value){
         URI uriSell = UriComponentsBuilder.fromHttpUrl(finalProjectconfig.getApiEndpoint()+"/project/exchange/sell")
@@ -149,6 +192,10 @@ public class Service {
                 .build()
                 .encode()
                 .toUri();
-        restTemplate.put(uriSell, null);
+        try {
+            restTemplate.put(uriSell, null);
+        } catch(RestClientException e){
+            LOGGER.error("Błąd połączenia z aplikacją REST - RestClientException dla metody sellCurrency()");
+        }
     }
 }

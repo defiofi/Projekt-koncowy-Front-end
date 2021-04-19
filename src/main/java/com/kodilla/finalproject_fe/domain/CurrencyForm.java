@@ -11,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +24,7 @@ public class CurrencyForm extends FormLayout {
     protected final Logger LOGGER = LoggerFactory.getLogger(CurrencyForm.class);
     private List<Currency> currencyList;
     private Map<String, String> currencyMap;
+    private Boolean isPossibleExchange;
     ComboBox currencyName = new ComboBox("nazwa waluty");
     ComboBox currencyCode = new ComboBox("kod waluty");
     TextField account = new TextField("środki na koncie");
@@ -42,6 +42,7 @@ public class CurrencyForm extends FormLayout {
         this.currencyList = new ArrayList<Currency>();
         this.mainView = mainView;
         this.list = list;
+        this.isPossibleExchange = false;
         service = Service.getInstance();
         account.setReadOnly(true);
         configurationComboBoxes();
@@ -92,9 +93,11 @@ public class CurrencyForm extends FormLayout {
     private HorizontalLayout createButtonsLayoutThree(){
         buyCurrencyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buyCurrencyButton.addClickListener(click -> buyAction());
+        buyCurrencyButton.setVisible(isPossibleExchange);
 
         sellCurrencyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         sellCurrencyButton.addClickListener(click -> sellAction());
+        sellCurrencyButton.setVisible(isPossibleExchange);
 
         return new HorizontalLayout(buyCurrencyButton, sellCurrencyButton);
     }
@@ -102,12 +105,15 @@ public class CurrencyForm extends FormLayout {
         if(currencyCode.getValue() != null && !currencyCode.getValue().equals("")) {
             service.newCurrency(mainView.getChoosenUser().getUserID(), currencyCode.getValue().toString());
             mainView.refresh();
+            checkVisible();
         }
     }
     private void deleteAction(){
         if(currencyCode.getValue() != null && !currencyCode.getValue().equals("")) {
             service.deleteCurrency(mainView.getChoosenUser().getUserID(), currencyCode.getValue().toString());
             mainView.refresh();
+            currencyList = service.getCurrency(mainView.getChoosenUser().getUserID());
+            checkVisible();
         }
     }
     private void topUpAction(){
@@ -140,6 +146,7 @@ public class CurrencyForm extends FormLayout {
     }
     public void setCurrencyList(List<Currency> currencyList){
         this.currencyList = currencyList;
+        checkVisible();
     }
     public void setCurrency(Currency currency){
         currencyName.setValue(currency.getCurrencyName());
@@ -188,6 +195,25 @@ public class CurrencyForm extends FormLayout {
         }catch(NumberFormatException e){
             LOGGER.error("Nie można zamienić tekstu na liczbę - wyjątek: NumberFormatException");
         }
+    }
+    private void checkVisible(){
+        if(currencyList.size()>0){
+            deleteCurrencyButton.setVisible(true);
+            topUpCurrencyButton.setVisible(true);
+            payOutCurrencyButton.setVisible(true);
+        }else{
+            deleteCurrencyButton.setVisible(false);
+            topUpCurrencyButton.setVisible(false);
+            payOutCurrencyButton.setVisible(false);
+        }
+        List<Currency> PLN = currencyList.stream().filter(c -> c.getCurrencyCode().equals("PLN")).collect(Collectors.toList());
+        if(currencyList.size()>= 2 && PLN.size()>=1){
+            isPossibleExchange = true;
+        }else{
+            isPossibleExchange = false;
+        }
+        buyCurrencyButton.setVisible(isPossibleExchange);
+        sellCurrencyButton.setVisible(isPossibleExchange);
     }
 }
 

@@ -27,6 +27,7 @@ public class CreateUserForm extends FormLayout {
         this.mainView = mainView;
         this.userList = userList;
         service = Service.getInstance();
+        checkVisible();
         add(userID, userName, createButtonsLayoutOne(), createButtonsLayoutTwo());
     }
     private HorizontalLayout createButtonsLayoutOne() {
@@ -55,6 +56,7 @@ public class CreateUserForm extends FormLayout {
         if(userName.getValue().length()>0) {
             service.createUser(new User(userName.getValue()));
             mainView.refresh();
+            checkVisible();
         }
     }
     private void resignationAction(){
@@ -79,6 +81,7 @@ public class CreateUserForm extends FormLayout {
     private void deleteAction(){
         service.deleteUser(Long.parseLong(userID.getValue()));
         mainView.refresh();
+        checkVisible();
     }
     public void setUserID(Long id){
         if(id == null){
@@ -92,6 +95,18 @@ public class CreateUserForm extends FormLayout {
             userName.setValue("");
         }else {
             userName.setValue(name);
+        }
+    }
+    private void checkVisible(){
+        userList = service.getUsers();
+        if(userList.size()>0){
+            chooseButton.setVisible(true);
+            changeButton.setVisible(true);
+            deleteButton.setVisible(true);
+        }else{
+            chooseButton.setVisible(false);
+            changeButton.setVisible(false);
+            deleteButton.setVisible(false);
         }
     }
 }
